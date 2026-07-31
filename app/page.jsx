@@ -92,6 +92,25 @@ export default function Home() {
   const [kvkStatus, setKvkStatus] = useState(null);
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState(null);
+  const [aiStatus, setAiStatus] = useState(null);
+
+  async function conceptSchrijven() {
+    setAiStatus("bezig");
+    try {
+      const { inhoud, ...rest } = waarden;
+      const r = await fetch("/api/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ steekwoorden: inhoud, context: rest }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || "Schrijven mislukt");
+      setWaarden((w) => ({ ...w, inhoud: data.tekst }));
+      setAiStatus("ok");
+    } catch (e) {
+      setAiStatus("fout: " + e.message);
+    }
+  }
 
   const brand = BRANDS.find((b) => b.id === brandId);
   const documenten = brandId ? documentenVoorBrand(brandId) : [];
@@ -125,6 +144,7 @@ export default function Home() {
         ...w,
         handelsnaam: data.handelsnaam ?? w.handelsnaam,
         adres: data.adres ?? w.adres,
+        postcode: data.postcode ?? w.postcode,
         plaats: data.plaats ?? w.plaats,
         sbi_omschrijving: data.sbi_omschrijving ?? w.sbi_omschrijving,
       }));
@@ -284,7 +304,26 @@ export default function Home() {
           <h2 style={{ marginTop: 0, fontSize: 18 }}>{doc.naam} — intake</h2>
           <div style={{ display: "grid", gap: 16 }}>
             {zichtbareDocVelden.map((v) => (
-              <Veld key={v.id} veld={v} waarde={waarden[v.id]} onChange={(x) => zet(v.id, x)} />
+              <div key={v.id}>
+                <Veld veld={v} waarde={waarden[v.id]} onChange={(x) => zet(v.id, x)} />
+                {v.id === "inhoud" && (
+                  <div style={{ marginTop: 8 }}>
+                    <button
+                      onClick={conceptSchrijven}
+                      disabled={aiStatus === "bezig"}
+                      style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${accent}`, background: "#fff", color: accent, fontWeight: 600, cursor: "pointer", fontSize: 14 }}
+                    >
+                      {aiStatus === "bezig" ? "Bezig met schrijven…" : "✨ Concept laten schrijven (AI)"}
+                    </button>
+                    <span style={{ fontSize: 12, color: "#6b7280", marginLeft: 10 }}>
+                      Typ eerst steekwoorden in het veld; de AI maakt er een nette brieftekst van. Altijd zelf nalezen.
+                    </span>
+                    {aiStatus && aiStatus.startsWith("fout") && (
+                      <div style={{ fontSize: 13, color: "#dc2626", marginTop: 6 }}>{aiStatus}</div>
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>

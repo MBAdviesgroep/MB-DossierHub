@@ -34,6 +34,25 @@ Open daarna http://localhost:3000.
   controleer bij problemen of het test-endpoint van KvK niet is gewijzigd
   (developers.kvk.nl).
 
+## AI-schrijfhulp (OpenAI)
+
+Bij het "Inhoud"-veld van de brieven staat een knop "Concept laten schrijven
+(AI)". De behandelaar typt steekwoorden of een ruwe tekst, de AI (via de
+OpenAI API) maakt er een nette conceptalinea van — de rest van het sjabloon
+(adressering, aanhef, ondertekening) blijft door de gewone merge gevuld,
+niet door AI. Altijd nalezen vóór accorderen.
+
+- Vraag een API-key aan op platform.openai.com (Settings → API keys).
+- Zet hem in Vercel bij Settings → Environment Variables als
+  `OPENAI_API_KEY`. Nooit in de code of in GitHub zetten.
+- Optioneel: `OPENAI_MODEL` (standaard `gpt-4o-mini`; kies dit ook lokaal
+  eerst, dat is het goedkoopste bruikbare model — pas pas op als de
+  kwaliteit onvoldoende blijkt).
+- Zonder `OPENAI_API_KEY` geeft de knop een duidelijke foutmelding; de rest
+  van de app (KvK, documentgeneratie) blijft gewoon werken.
+- Kosten: alleen betalen per gebruik (geen abonnement zoals bij KvK), een
+  paar cent per gegenereerde alinea bij `gpt-4o-mini`.
+
 ## Eigen sjablonen gebruiken (belangrijk!)
 
 De huidige sjablonen in `templates/<bedrijf>/` zijn dummy's. Vervang ze door
